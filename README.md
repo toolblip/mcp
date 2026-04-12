@@ -1,141 +1,105 @@
 # @toolblip/mcp
 
-Use [Toolblip](https://toolblip.com) developer tools directly from Claude Code, Cursor, and other MCP-compatible AI clients.
+Exposes [Toolblip](https://toolblip.com) developer tools as MCP (Model Context Protocol) tools for use with Claude Code, Cursor, and any MCP-compatible AI client.
 
-Instead of copy-pasting JSON to a formatter, or opening a browser tab to encode Base64 — just ask your AI assistant to use the Toolblip tool directly. The tool runs locally, nothing is sent to a server.
+## Tools (17 total)
 
-## Available Tools
-
-| Tool | What it does |
+| Tool | Description |
 |------|-------------|
 | `base64_encode` | Encode text to Base64 |
-| `base64_decode` | Decode Base64 to text |
+| `base64_decode` | Decode Base64 to plain text |
 | `hash_generate` | Generate MD5, SHA-1, SHA-256, SHA-384, SHA-512 hashes |
 | `uuid_generate` | Generate UUID v4 (random) or v7 (time-sortable) |
-| `url_encode` | URL-encode text |
-| `url_decode` | URL-decode text |
+| `url_encode` | URL encode or decode components |
 | `json_format` | Format, minify, or validate JSON |
-| `cron_parse` | Validate a cron expression |
-
-More tools coming soon.
-
-## Requirements
-
-- Node.js 18+
-- An MCP-compatible AI client (Claude Code, Cursor, etc.)
+| `cron_parse` | Parse cron expression → description + next N runs |
+| `yaml_convert` | Convert YAML ↔ JSON, validate syntax |
+| `case_convert` | Convert between camelCase, snake_case, kebab-case, etc. |
+| `text_stats` | Count words, characters, sentences, paragraphs + reading time |
+| `percentage_calculate` | Percentage math: X% of Y, what % is X of Y |
+| `directory_search` | Search Toolblip directory for tools or MCP servers |
+| `color_convert` | Convert between HEX, RGB, and HSL color formats |
+| `regex_test` | Test regex patterns against strings, show all matches |
+| `sql_format` | Prettify and format SQL queries |
+| `html_encode` | Encode/decode HTML entities |
+| `jwt_decode` | Decode JWT header, payload, expiration (no verification) |
+| `css_gradient` | Generate CSS linear/radial/conic gradient code |
 
 ## Installation
 
-```bash
-npm install -g @toolblip/mcp
-```
-
-Or run without installing:
-
-```bash
-npx @toolblip/mcp
-```
-
-## Configuration
-
 ### Claude Code
 
-Add to your Claude Code settings (`~/.claude/settings.json`):
+Add to your `~/.claude/projects/*/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "toolblip": {
       "command": "npx",
-      "args": ["@toolblip/mcp"]
+      "args": ["-y", "@toolblip/mcp"]
     }
   }
 }
 ```
 
-Or for local development:
+Or install globally:
+```bash
+npm install -g @toolblip/mcp
+```
+
+Then in Claude Code:
+```
+/mcp add toolblip npx -y @toolblip/mcp
+```
+
+### Cursor
+
+Settings → MCP Server → Add new server:
 
 ```json
 {
   "mcpServers": {
     "toolblip": {
-      "command": "node",
-      "args": ["/path/to/toolblip-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "@toolblip/mcp"]
     }
   }
 }
 ```
 
-### Cursor
+### As a Library
 
-1. Open Cursor Settings → MCP
-2. Click "Add new MCP server"
-3. Name: `toolblip`
-4. Type: `stdio`
-5. Command: `npx @toolblip/mcp`
+```typescript
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { registerToolblipTools } from '@toolblip/mcp';
 
-### Other MCP Clients
+const server = new McpServer({ name: 'my-app', version: '1.0.0' });
+registerToolblipTools(server);
 
-Any MCP-compatible client that supports `stdio` transport can use this package. Consult your client's documentation for adding custom MCP servers.
-
-## Usage Examples
-
-```
-You: Format this JSON for me:
-{"name":"Toolblip","version":"1.0","active":true}
-
-Claude: [uses json_format tool]
-Result:
-{
-  "name": "Toolblip",
-  "version": "1.0",
-  "active": true
-}
+const transport = new StdioServerTransport();
+await server.connect(transport);
 ```
 
-```
-You: Generate 5 UUIDs for new user records
+## Configuration
 
-Claude: [uses uuid_generate tool with count: 5]
-Result: [uuid1, uuid2, uuid3, uuid4, uuid5]
-```
+### Environment Variables
 
-```
-You: Hash the password 'secret123' using SHA-256
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TOOLBLIP_API_URL` | `https://api.toolblip.com` | Toolblip API base URL |
 
-Claude: [uses hash_generate tool with algorithm: sha256]
-Hash: 2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b
-```
+## Requirements
 
-## How It Works
+- Node.js 18+
+- npm or yarn
 
-The MCP server runs as a local process and communicates via stdio. When you ask the AI to use a tool:
-
-1. The AI client sends a JSON-RPC request to the MCP server
-2. The server executes the tool logic in Node.js
-3. The result is returned to the AI client
-
-All tool logic runs locally. No data is sent to Toolblip's servers.
-
-## Privacy
-
-Tools like `hash_generate`, `uuid_generate`, and `base64_encode` are purely local operations — they use Node.js built-in APIs (`crypto`, `Buffer`) to process data. Nothing is transmitted over the network.
-
-Tools like `json_format` process the JSON string locally. No data leaves your machine.
-
-## Developing
+## Development
 
 ```bash
-# Clone and install
-git clone https://github.com/toolblip/toolblip-mcp.git
-cd toolblip-mcp
 npm install
-
-# Build TypeScript
-npm run build
-
-# Run locally
-node dist/index.js
+npm run build    # TypeScript → dist/
+npm test         # (placeholder)
 ```
 
 ## License

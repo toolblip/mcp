@@ -14,6 +14,12 @@ import { formatJson } from './tools/json.js';
 import { parseCron } from './tools/cron.js';
 import { convertYaml } from './tools/yaml.js';
 import { searchDirectory } from './tools/directory.js';
+import { convertColor } from './tools/color.js';
+import { testRegex } from './tools/regex.js';
+import { formatSqlQuery } from './tools/sql.js';
+import { htmlEncode, htmlDecode } from './tools/html.js';
+import { decodeJwt } from './tools/jwt.js';
+import { generateGradient } from './tools/gradient.js';
 // Create MCP server
 const server = new McpServer({
     name: 'toolblip',
@@ -236,6 +242,101 @@ server.registerTool('directory_search', {
         return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
     }
     return { content: [{ type: 'text', text: result.result ?? 'No results found' }] };
+});
+// Color Converter (HEX ↔ RGB ↔ HSL)
+server.registerTool('color_convert', {
+    description: 'Convert colors between HEX, RGB, and HSL formats.',
+    inputSchema: {
+        input: z.string().describe('Color: #fff, #ffffff, rgb(r,g,b), hsl(h,s%,l%)'),
+    },
+}, async ({ input }) => {
+    const result = convertColor(input, 'hex');
+    if (!result.valid) {
+        return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+    }
+    const out = [
+        `HEX:   ${result.hex}`,
+        `RGB:   rgb(${result.rgb.r}, ${result.rgb.g}, ${result.rgb.b})`,
+        `HSL:   hsl(${result.hsl.h}, ${result.hsl.s}%, ${result.hsl.l}%)`,
+    ].join('\n');
+    return { content: [{ type: 'text', text: out }] };
+});
+// Regex Tester
+server.registerTool('regex_test', {
+    description: 'Test a regular expression against a string. Returns all matches.',
+    inputSchema: {
+        pattern: z.string().describe('Regex pattern'),
+        test_string: z.string().describe('String to test against'),
+        flags: z.string().default('g').optional(),
+    },
+}, async ({ pattern, test_string, flags = 'g' }) => {
+    const result = testRegex(pattern, test_string, flags);
+    if (!result.valid) {
+        return { content: [{ type: 'text', text: `Invalid regex: ${result.error}` }], isError: true };
+    }
+    if (result.matchCount === 0) {
+        return { content: [{ type: 'text', text: 'No matches found.' }] };
+    }
+    const lines = result.matches.map((m, i) => `  ${i + 1}. "${m}"`).join('\n');
+    return { content: [{ type: 'text', text: `Found ${result.matchCount} match(es):\n${lines}` }] };
+});
+// SQL Formatter
+server.registerTool('sql_format', {
+    description: 'Format and prettify a SQL query.',
+    inputSchema: {
+        query: z.string().describe('SQL query to format'),
+    },
+}, async ({ query }) => {
+    const result = formatSqlQuery(query);
+    if (!result.valid) {
+        return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+    }
+    return { content: [{ type: 'text', text: result.formatted ?? query }] };
+});
+// HTML Encoder
+server.registerTool('html_encode', {
+    description: 'Encode or decode HTML entities.',
+    inputSchema: {
+        input: z.string().describe('Text to encode or decode'),
+        mode: z.enum(['encode', 'decode']).default('encode'),
+    },
+}, async ({ input, mode }) => {
+    const result = mode === 'decode' ? htmlDecode(input) : htmlEncode(input);
+    return { content: [{ type: 'text', text: result }] };
+});
+// JWT Decoder
+server.registerTool('jwt_decode', {
+    description: 'Decode and inspect a JWT (without verification). Shows header, payload, expiration.',
+    inputSchema: {
+        token: z.string().describe('JWT token string'),
+    },
+}, async ({ token }) => {
+    const result = decodeJwt(token);
+    if (!result.valid) {
+        return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+    }
+    const out = [
+        `Header: ${JSON.stringify(result.header)}`,
+        `Payload: ${JSON.stringify(result.payload)}`,
+        `Expires: ${result.expiresAt ?? 'no exp claim'} ${result.expired ? '(EXPIRED)' : ''}`,
+        `Issued at: ${result.issuedAt ?? 'no iat claim'}`,
+    ].join('\n');
+    return { content: [{ type: 'text', text: out }] };
+});
+// CSS Gradient Generator
+server.registerTool('css_gradient', {
+    description: 'Generate CSS gradient code (linear, radial, conic) with color stops.',
+    inputSchema: {
+        type: z.enum(['linear', 'radial', 'conic']).default('linear'),
+        stops: z.array(z.string()).describe('Color stops: "color" or "color pos%"'),
+        angle: z.number().default(90).optional(),
+    },
+}, async ({ type, stops, angle = 90 }) => {
+    const result = generateGradient(type, stops, angle);
+    if (!result.valid) {
+        return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+    }
+    return { content: [{ type: 'text', text: result.css }] };
 });
 // Start server
 async function main() {
