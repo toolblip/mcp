@@ -13,6 +13,7 @@ import { generateHash } from './tools/hash.js';
 import { formatJson } from './tools/json.js';
 import { parseCron } from './tools/cron.js';
 import { convertYaml } from './tools/yaml.js';
+import { searchDirectory } from './tools/directory.js';
 // Create MCP server
 const server = new McpServer({
     name: 'toolblip',
@@ -221,6 +222,20 @@ server.registerTool('percentage_calculate', {
             break;
     }
     return { content: [{ type: 'text', text: String(result) }] };
+});
+// Directory Search
+server.registerTool('directory_search', {
+    description: 'Search the Toolblip tool directory or MCP server directory. Use to find available developer tools or MCP servers by keyword.',
+    inputSchema: {
+        query: z.string().describe('Search keyword or phrase'),
+        type: z.enum(['tools', 'servers']).default('tools').optional(),
+    },
+}, async ({ query, type = 'tools' }) => {
+    const result = await searchDirectory(query, type);
+    if (!result.valid) {
+        return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+    }
+    return { content: [{ type: 'text', text: result.result ?? 'No results found' }] };
 });
 // Start server
 async function main() {
