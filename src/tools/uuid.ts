@@ -1,45 +1,45 @@
-import { randomUUID } from 'crypto';
-import { z } from 'zod';
+// UUID v4 and v7 generator
 
-export const UuidInputSchema = z.object({
-  count: z.number().int().min(1).max(100).default(1).optional(),
-  version: z.enum(['v4', 'v7']).default('v4').optional(),
-});
-
-export type UuidInput = z.infer<typeof UuidInputSchema>;
-
-// v7 UUIDs are time-sortable and based on timestamp + random data
+// v7 UUIDs are time-sortable — based on timestamp + random data
 export function generateV7(): string {
+  const randomBytes = new Uint8Array(10);
+  crypto.getRandomValues(randomBytes);
+
   const now = Date.now();
-  const timeHex = now.toString(16).padStart(12, '0');
+  const timeLow = Math.floor(now / 4294967296) & 0xffffffff;
+  const timeMid = ((now & 0x00ffff) * 65536) & 0xffff;
+  const timeHi = ((now / 4294967296 / 65536) | 0x1000) & 0x4fff; // version 7
 
-  // 48 bits of timestamp
-  const timestamp = BigInt('0x' + timeHex);
+  const bytes = new Uint8Array(16);
 
-  // 80 bits of random data
-  const random = BigInt('0x' + Buffer.from(crypto.randomBytes(10)).toString('hex'));
+  // time_low (4 bytes, big-endian)
+  bytes[0] = (timeLow >> 24) & 0xff;
+  bytes[1] = (timeLow >> 16) & 0xff;
+  bytes[2] = (timeLow >> 8) & 0xff;
+  bytes[3] = timeLow & 0xff;
 
-  // Construct v7 UUID
-  // Unix Epoch time in milliseconds as 48-bit integer
-  const time_low = (timestamp & BigInt(0xFFFFFFFFn)) << 16;
-  const time_mid = ((timestamp >> 32n) & BigInt(0xFFFFn)) | BigInt(0x7000n); // version 7
-  const time_hi_and_version = ((timestamp >> 48n) & BigInt(0x0FFFn)) | BigInt(0x8000n); // variant
+  // time_mid (2 bytes, big-endian)
+  bytes[4] = (timeMid >> 8) & 0xff;
+  bytes[5] = timeMid & 0xff;
 
-  const randomBytes = Buffer.from(crypto.randomBytes(8));
-  const clock_seq_hi_and_reserved = (randomBytes[0] & 0x3f) | 0x80;
-  const clock_seq_low = randomBytes[1];
-  const node = randomBytes.slice(2);
+  // time_hi_and_version (2 bytes, big-endian)
+  bytes[6] = (timeHi >> 8) & 0xff;
+  bytes[7] = timeHi & 0xff;
 
-  const bytes = Buffer.alloc(16);
-  bytes.writeUInt32BE(Number((time_low >> 32n) & 0xFFFFFFFFn), 0);
-  bytes.writeUInt16BE(Number((time_low >> 16n) & 0xFFFFn), 4);
-  bytes.writeUInt16BE(Number(time_mid), 6);
-  bytes.writeUInt16BE(Number(time_hi_and_version), 8);
-  bytes.writeUInt8(clock_seq_hi_and_reserved, 10);
-  bytes.writeUInt8(clock_seq_low, 11);
-  node.copy(bytes, 12);
+  // clock_seq_hi_and_reserved + clock_seq_low (2 bytes)
+  bytes[8] = (randomBytes[0] & 0x3f) | 0x80;
+  bytes[9] = randomBytes[1];
 
-  const hex = bytes.toString('hex');
+  // node (6 bytes)
+  bytes[10] = randomBytes[2];
+  bytes[11] = randomBytes[3];
+  bytes[12] = randomBytes[4];
+  bytes[13] = randomBytes[5];
+  bytes[14] = randomBytes[6];
+  bytes[15] = randomBytes[7];
+
+  const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+
   return [
     hex.slice(0, 8),
     hex.slice(8, 12),
