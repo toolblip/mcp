@@ -2,3 +2,30 @@ node_modules/
 dist/
 .env
 *.log
+
+# === Workspace files (toolblip/workspace repo) ===
+# Agent identity and memory
+SOUL.md
+AGENTS.md
+MEMORY.md
+HEARTBEAT.md
+IDENTITY.md
+USER.md
+TOOLS.md
+DREAMS.md
+BOOTSTRAP.md
+TASK_LIST.md
+TASK_REPORT.md
+PHASE2.md
+
+# Workspace config
+.skills/
+.openclaw/
+.railway-domain-update
+
+# Env files
+.env.production.local
+.env.local
+
+# OS files
+.DS_Store
