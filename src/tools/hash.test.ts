@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateHash } from './src/tools/hash.js';
+import { generateHash } from './hash.js';
 
 describe('generateHash', () => {
   it('generates md5 hash', () => {

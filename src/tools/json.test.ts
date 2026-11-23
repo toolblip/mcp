@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatJson } from './src/tools/json.js';
+import { formatJson } from './json.js';
 
 describe('formatJson', () => {
   it('formats valid JSON with indentation', () => {

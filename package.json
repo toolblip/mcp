@@ -1,10 +1,19 @@
 {
   "name": "@toolblip/mcp",
   "version": "0.1.0",
+  "mcpName": "com.toolblip/mcp",
   "description": "Use Toolblip developer tools directly from Claude Code and other MCP-compatible AI clients",
+  "homepage": "https://toolblip.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toolblip/mcp.git"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*"
+  ],
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "bin": {
     "toolblip-mcp": "./dist/index.js"
   },
@@ -38,8 +47,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
   }
 }
