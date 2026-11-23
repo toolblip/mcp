@@ -1,6 +1,6 @@
 {
   "name": "@toolblip/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "mcpName": "com.toolblip/mcp",
   "description": "Use Toolblip developer tools directly from Claude Code and other MCP-compatible AI clients",
   "homepage": "https://toolblip.com",

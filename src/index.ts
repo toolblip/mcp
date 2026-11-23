@@ -27,7 +27,7 @@ import { generateGradient } from './tools/gradient.js';
 // Create MCP server
 const server = new McpServer({
   name: 'toolblip',
-  version: '0.1.0',
+  version: '0.1.1',
 });
 
 // Base64 Encode / Decode
