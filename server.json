@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.toolblip/mcp",
+  "title": "Toolblip",
+  "description": "18 developer tools for AI agents: JSON, YAML, Base64, hashes, regex, cron, SQL, JWT and more.",
+  "websiteUrl": "https://toolblip.com",
+  "repository": { "url": "https://github.com/toolblip/mcp", "source": "github" },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@toolblip/mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 Exposes [Toolblip](https://toolblip.com) developer tools as MCP (Model Context Protocol) tools for use with Claude Code, Cursor, and any MCP-compatible AI client.
 
-## Tools (17 total)
+## Tools (18 total)
 
 | Tool | Description |
 |------|-------------|
@@ -29,27 +29,8 @@ Exposes [Toolblip](https://toolblip.com) developer tools as MCP (Model Context P
 
 ### Claude Code
 
-Add to your `~/.claude/projects/*/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "toolblip": {
-      "command": "npx",
-      "args": ["-y", "@toolblip/mcp"]
-    }
-  }
-}
-```
-
-Or install globally:
 ```bash
-npm install -g @toolblip/mcp
-```
-
-Then in Claude Code:
-```
-/mcp add toolblip npx -y @toolblip/mcp
+claude mcp add toolblip -- npx -y @toolblip/mcp
 ```
 
 ### Cursor
@@ -65,20 +46,6 @@ Settings → MCP Server → Add new server:
     }
   }
 }
-```
-
-### As a Library
-
-```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { registerToolblipTools } from '@toolblip/mcp';
-
-const server = new McpServer({ name: 'my-app', version: '1.0.0' });
-registerToolblipTools(server);
-
-const transport = new StdioServerTransport();
-await server.connect(transport);
 ```
 
 ## Configuration
@@ -99,7 +66,7 @@ await server.connect(transport);
 ```bash
 npm install
 npm run build    # TypeScript → dist/
-npm test         # (placeholder)
+npm run test:run
 ```
 
 ## License
